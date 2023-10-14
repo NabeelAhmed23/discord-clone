@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
 import { ChannelType } from "@prisma/client";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   name: z
@@ -47,17 +48,17 @@ const formSchema = z.object({
 });
 
 export const CreateChannelModal = () => {
-  const { isOpen, onClose, type } = useModal();
+  const { isOpen, onClose, type, data } = useModal();
   const router = useRouter();
   const params = useParams();
-
+  const { channelType } = data;
   const isModalOpen = isOpen && type === "createChannel";
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      type: ChannelType.TEXT,
+      type: channelType || ChannelType.TEXT,
     },
   });
 
@@ -85,6 +86,14 @@ export const CreateChannelModal = () => {
     form.reset();
     onClose();
   };
+
+  useEffect(() => {
+    if (channelType) {
+      form.setValue("type", channelType);
+    } else {
+      form.setValue("type", ChannelType.TEXT);
+    }
+  }, [form, channelType]);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
